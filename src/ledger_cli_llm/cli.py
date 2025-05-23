@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 from .parser import parse_ledger
+import sys
 
 
 def parse_arguments():
@@ -24,16 +25,5 @@ def main() -> None:
     # Parse the ledger content
     entries = parse_ledger(content)
 
-    # Print summary of parsed entries
-    transaction_count = sum(1 for entry in entries if entry.is_transaction)
-    print(f"Parsed {len(entries)} entries, including {transaction_count} transactions")
-
-    # Print the first few transactions as an example
-    print("\nExample transactions:")
     for entry in entries:
-        if entry.is_transaction:
-            print("Original:")
-            print("".join(entry.original_lines))
-            print("\nTransformed:")
-            print("".join(entry.transform()))
-            break
+        sys.stdout.write("".join(entry.transform()))
