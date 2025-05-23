@@ -7,7 +7,9 @@ authors = [
     { name = "itsjohncs", email = "johnsullivan.pem@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pytest>=8.3.5",
+]
 
 [project.scripts]
 ledger-cli-llm = "ledger_cli_llm:cli.main"
@@ -15,3 +17,7 @@ ledger-cli-llm = "ledger_cli_llm:cli.main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
