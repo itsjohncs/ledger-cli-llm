@@ -5,11 +5,12 @@ from typing import List
 
 @dataclass
 class LedgerEntry:
+    id: int
     original_lines: List[str]
     is_transaction: bool
 
     def transform(self) -> List[str]:
-        transformed_lines = []
+        transformed_lines = [f"{self.id}\n"]  # Add the entry ID as the first line
 
         for line in self.original_lines:
             line = line.replace("UnknownPayee", "?")
@@ -35,6 +36,8 @@ def parse_ledger(content: str) -> List[LedgerEntry]:
 
     lines = content.splitlines(keepends=True)
 
+    next_entry_id = 1
+
     i = 0
     while i < len(lines):
         # Skip empty lines
@@ -58,7 +61,12 @@ def parse_ledger(content: str) -> List[LedgerEntry]:
 
         # Create entry object
         entries.append(
-            LedgerEntry(original_lines=entry_lines, is_transaction=is_transaction)
+            LedgerEntry(
+                id=next_entry_id,
+                original_lines=entry_lines,
+                is_transaction=is_transaction,
+            )
         )
+        next_entry_id += 1
 
     return entries

@@ -88,10 +88,11 @@ def test_transform_unknown_replacements():
 
     entries = parse_ledger(content)
     transformed_lines = entries[0].transform()
-    
-    assert "2023/01/01 ?" in transformed_lines[0]
-    assert "?    $10.00" in transformed_lines[1]
-    
+
+    assert transformed_lines[0] == "1\n"  # First line is the entry ID
+    assert "2023/01/01 ?" in transformed_lines[1]
+    assert "?    $10.00" in transformed_lines[2]
+
     # Verify the original lines are unchanged
     assert "UnknownPayee" in entries[0].original_lines[0]
     assert "UnknownAccount" in entries[0].original_lines[1]
@@ -107,14 +108,15 @@ def test_transform_metadata_handling():
 
     entries = parse_ledger(content)
     transformed_lines = entries[0].transform()
-    
+
     # SyncedDescription should be kept but renamed to Info
-    assert len(transformed_lines) == 3
-    assert "; Info: Original purchase" in transformed_lines[1]
-    
+    assert len(transformed_lines) == 4  # +1 for the ID line
+    assert transformed_lines[0] == "1\n"  # First line is the entry ID
+    assert "; Info: Original purchase" in transformed_lines[2]
+
     # Other metadata should be removed
     assert all("Metadata: Should be removed" not in line for line in transformed_lines)
-    
+
     # Test with a line that has SyncedDescription as part of another word
     content2 = """2023/01/01 Payee
     ; NotSyncedDescription: Should be removed
@@ -122,7 +124,8 @@ def test_transform_metadata_handling():
 """
     entries2 = parse_ledger(content2)
     transformed_lines2 = entries2[0].transform()
-    
+
     # The metadata line should be removed
-    assert len(transformed_lines2) == 2
+    assert len(transformed_lines2) == 3  # +1 for the ID line
+    assert transformed_lines2[0] == "1\n"  # First line is the entry ID
     assert all("NotSyncedDescription" not in line for line in transformed_lines2)
