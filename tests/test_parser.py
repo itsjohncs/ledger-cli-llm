@@ -6,6 +6,12 @@ def test_parse_empty_content():
     entries = parse_ledger("")
     assert len(entries) == 0
 
+    # Test with a single empty line
+    entries = parse_ledger("\n")
+    assert len(entries) == 1
+    assert not entries[0].is_transaction
+    assert entries[0].original_lines == ["\n"]
+
 
 def test_parse_simple_transaction():
     """Test parsing a simple transaction."""
@@ -24,10 +30,21 @@ def test_parse_simple_transaction():
     assert entries[0].original_lines[2] == "    Assets:Checking\n"
 
 
+def test_parse_empty_lines():
+    """Test parsing content with empty lines."""
+    content = "\n\n\n"
+    entries = parse_ledger(content)
+
+    assert len(entries) == 3
+    for entry in entries:
+        assert not entry.is_transaction
+        assert entry.original_lines == ["\n"]
+
+
 def test_parse_multiple_entries():
     """Test parsing multiple entries including transactions and non-transactions."""
     content = """account Assets:Checking
-    
+
 2023/01/01 Grocery Store
     Expenses:Food    $50.00
     Assets:Checking
@@ -40,25 +57,26 @@ def test_parse_multiple_entries():
 
     entries = parse_ledger(content)
 
-    assert len(entries) == 4
-
     # First entry is an account declaration (non-transaction)
     assert not entries[0].is_transaction
     assert entries[0].original_lines[0] == "account Assets:Checking\n"
 
-    # Second entry is a transaction
-    assert entries[1].is_transaction
-    assert entries[1].original_lines[0] == "2023/01/01 Grocery Store\n"
-    assert len(entries[1].original_lines) == 3
+    assert not entries[1].is_transaction
+    assert entries[1].original_lines[0] == "\n"
 
-    # Third entry is a comment (non-transaction)
-    assert not entries[2].is_transaction
-    assert entries[2].original_lines[0] == "; Comment line\n"
+    # Transactions swallow up the empty lines following them
+    assert entries[2].is_transaction
+    assert entries[2].original_lines[0] == "2023/01/01 Grocery Store\n"
+    assert len(entries[2].original_lines) == 4
 
-    # Fourth entry is a transaction
-    assert entries[3].is_transaction
-    assert entries[3].original_lines[0] == "2023/01/02 Restaurant\n"
-    assert len(entries[3].original_lines) == 3
+    assert not entries[3].is_transaction
+    assert entries[3].original_lines[0] == "; Comment line\n"
+
+    assert entries[4].is_transaction
+    assert entries[4].original_lines[0] == "2023/01/02 Restaurant\n"
+    assert len(entries[4].original_lines) == 3
+
+    assert len(entries) == 5
 
 
 def test_transaction_with_comments():

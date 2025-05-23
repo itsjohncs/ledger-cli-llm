@@ -40,11 +40,6 @@ def parse_ledger(content: str) -> List[LedgerEntry]:
 
     i = 0
     while i < len(lines):
-        # Skip empty lines
-        if not lines[i].strip():
-            i += 1
-            continue
-
         # Check if this is a transaction line (starts with a date)
         is_transaction = bool(lines[i].strip() and lines[i].strip()[0].isdigit())
 
@@ -55,8 +50,7 @@ def parse_ledger(content: str) -> List[LedgerEntry]:
         # If it's a transaction, collect all indented lines that follow
         if is_transaction:
             while i < len(lines) and (not lines[i].strip() or lines[i][0].isspace()):
-                if lines[i].strip():  # Skip empty lines
-                    entry_lines.append(lines[i])
+                entry_lines.append(lines[i])
                 i += 1
 
         # Create entry object
